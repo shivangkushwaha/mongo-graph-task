@@ -1,5 +1,4 @@
-const appConstant = require("../appConstant");
-const { sendBadResponse } = require("../controller/response.controller")
+const { sendBadResponse } = require("../controllers/responseController")
 
 const validator = (schema, property) => {
   return (req, res, next) => {

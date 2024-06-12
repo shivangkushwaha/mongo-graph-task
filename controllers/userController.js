@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const userService = require("../service/userService")
+const hepler = require("../appConstant/helper")
 
 exports.getUsers = async (req, res) => {
     try {
@@ -55,9 +56,9 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
-    const { username, password } = req.body;
+    const { userName, password } = req.body;
     try {
-        const user = await User.findOne({ username });
+        const user = await userService.findUserByUsername(userName);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -67,12 +68,8 @@ exports.loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Password is incorrect' });
         }
 
-        const role = 
-        // const token = jwt.sign(
-        //     { userId: user.id, username: user.username, role: user.role },
-        //     'supersecretkey',
-        //     { expiresIn: '1h' }
-        // );
+        let token = await hepler.generateAccessToken(user.id)
+        return true
 
         res.status(200).json({ userId: user.id, token, tokenExpiration: 1 });
     } catch (error) {

@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { sendBadResponse } = require("../controller/response.controller");
+const { sendBadResponse } = require("../controllers/responseController");
 const scopeValidator = ( scope = [] ) => {
   return (req, res, next) => {
     if( scope == null || scope.length === 0 )

@@ -10,15 +10,10 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
-    role: {
-        type: String,
-        required: true,
-        enum: ['Admin', 'Manager', 'User']
-    },
-    organizationId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Organization',
-        required: true
+    status:{
+        type: Number,
+        require:true,
+        default: 1
     }
 });
 

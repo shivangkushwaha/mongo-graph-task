@@ -31,4 +31,4 @@ const TaskSchema = new Schema({
     }
 });
 
-module.exports
+module.exports = mongoose.model('Task', TaskSchema);
