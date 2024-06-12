@@ -3,29 +3,21 @@ const UserRole = require("../models/userRoles")
 module.exports = {
     findUser:async (id)=>{
         try {
-            console.log("fatching user by id ", id)
-            const user = await User.findOne({ _id: id })
-            const roles = await UserRole.find({ userId: user._id })
+            const user = await User.findOne({ _id: id }).select('id')
+            const roles = await UserRole.find({ userId: user._id },{'password':0})
             .populate({
                 path: 'roleId',
                 model: 'Role'
-            })
+            }).lean()
             .exec();
-            console.log('user', user)
-            console.log('roles', roles)
-            // for (){
-            //     console.log(role)
-            //     // scope.push(role.name, [...role.roleId.permissions])
-            // }
-           
-            // const scope = roles.reduce((acc, role) => {
-            //     const { name, permissions } = role.roleId;
-            //     console.log('role',permissions)
-            //     return [...acc, ...permissions, name];
-            // }, []);
+            const userRoles = [] 
+            const scope = roles.reduce((acc, role) => {
+                const {permissions, name} = role.roleId
+                userRoles.push(name)
+                return [...acc, ...permissions, name];
+            }, []);
             
-            console.log('scope',scope)
-            return user;
+            return {user, scope, userRoles};
         } catch(error){
             console.error("Error in user service findUser", error)
             throw new Error(error)

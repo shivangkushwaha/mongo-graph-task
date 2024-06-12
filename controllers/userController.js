@@ -2,6 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const userService = require("../service/userService")
 const hepler = require("../appConstant/helper")
+const {sendBadResponse, sendSucessResponse, sendServerErrorResponse} = require('./responseController')
 
 exports.getUsers = async (req, res) => {
     try {
@@ -59,20 +60,21 @@ exports.loginUser = async (req, res) => {
     const { userName, password } = req.body;
     try {
         const user = await userService.findUserByUsername(userName);
+
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return sendBadResponse(res,'You are not registred with us yet.')
         }
-
+        
         const isEqual = await bcrypt.compare(password, user.password);
-        if (!isEqual) {
-            return res.status(400).json({ message: 'Password is incorrect' });
+        if (!isEqual) {            
+            return sendBadResponse(res,'Password is incorrect' )
         }
 
-        let token = await hepler.generateAccessToken(user.id)
-        return true
+        let response = await hepler.generateAccessToken(user.id)
+        return sendSucessResponse(res, 'Logged in Sucessfully', response)
 
-        res.status(200).json({ userId: user.id, token, tokenExpiration: 1 });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error in User:loginUser', error)
+        return sendServerErrorResponse(res, error)
     }
 };

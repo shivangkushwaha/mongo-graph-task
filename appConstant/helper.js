@@ -22,40 +22,11 @@ module.exports = {
   // Generate JWT Tokens
   generateAccessToken: async (id) => {
     let hasFullAccess = 0;
-    let scope = [];
-    // let user = await Models.User.findOne({
-    //   where: { id },
-    //   attributes: ["uuid","id","email","countryCode","email","phone"],
-    //   include: [
-    //     {
-    //       model: Models.UserProfile,
-    //       attributes: ["name", "dob", "isCompleted","image"],
-    //       as: "profile",
-    //       include: [
-    //         {
-    //           model: Models.Attachment,
-    //           attributes: attachmentAttribute
-    //         }
-    //       ]
-    //     },
-    //   ],
-    // });    
-    // let roles = await user.getRoles();
-    // for (const role of roles) {
-    //   scope.push(role.dataValues.code);
-    //   let permissions = await role.getPermissions({ raw: true, nest: true });
-    //   for (const permission of permissions) {
-    //     scope.push(permission.code);
-    //   }
-    // }
-    // if (scope.includes("admin")) {
-    //   hasFullAccess = 1;
-    // }
-    // // console.log('user', user)
-    let user = await userService.findUser(id);
-    console.log('suer',user)
-    let token = signToken(JSON.stringify({ id:id ,scope: scope}));
-    user = JSON.parse(JSON.stringify(user));
+    const {user, scope, userRoles} = await userService.findUser(id);
+    if (scope.includes("admin")) {
+      hasFullAccess = 1;
+    }
+    let token = signToken(JSON.stringify({ user, scope, roles : userRoles}));
    
     return {
       hasFullAccess,
