@@ -1,5 +1,7 @@
 const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList } = require('graphql');
 const User = require('../models/user');
+const { scopeValidator } = require('../middleware/scopeMiddlewares');
+
 const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
@@ -14,12 +16,13 @@ const userQueries = {
     user: {
         type: UserType,
         args: { id: { type: GraphQLID } },
-        resolve(parent, args) {
+        resolve: scopeValidator(['admin'])( (parent, args) =>{
             return User.findById(args.id);
-        }
+        })
     },
     users: {
         type: new GraphQLList(UserType),
+
         resolve(parent, args) {
             return User.find({});
         }

@@ -19,9 +19,8 @@ const authentication = async (req, res, next) => {
         .status(appConstant.STATUS_CODE.BAD_REQUEST)
         .send({ status: false, message: "INVALID_TOKEN_FORMAT", response: {} });
 
-    console.log('valid', valid)
-    let user = await findUser(valid.id)
-    console.log('user', usre)
+    const userId = valid.user
+    let user = await findUser(userId._id)
     if (!user)
       return res
         .status(appConstant.STATUS_CODE.BAD_REQUEST)

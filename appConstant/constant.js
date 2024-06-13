@@ -24,5 +24,11 @@ module.exports = {
         SERVER_ERROR: 500,
         METHOD_NOT_ALLOWED: 405,
         PERMISSION_NOT_ALLOWED:422
+    },
+    USER_ACCOUNT_STATUS : {
+        "TOKEN_EXPIRED": 1,
+        "ACCOUNT_DEACTIVATED": 0,
+        "ACCOUNT_DEACTIVATED_BY_ADMIN": 2,
+
     }
 }

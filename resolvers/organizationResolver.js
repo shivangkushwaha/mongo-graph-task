@@ -1,5 +1,6 @@
 const Organization = require('../models/organization');
 
+
 const organizationResolver = {
     Query: {
         organization: async (_, { id }) => {
