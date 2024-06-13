@@ -1,6 +1,6 @@
 const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList } = require('graphql');
-const User = require('../models/user');
-const { scopeValidator } = require('../middleware/scopeMiddlewares');
+const userResolver = require('../resolvers/userResolver');
+const scopeValidator = require('../middleware/scopeMiddlewares');
 
 const UserType = new GraphQLObjectType({
     name: 'User',
@@ -12,20 +12,28 @@ const UserType = new GraphQLObjectType({
     })
 });
 
+const LoginType = new GraphQLObjectType({
+    name: 'Login',
+    fields: () => ({
+        userId: { type: GraphQLID },
+        token: { type: GraphQLString },
+        tokenExpiration: { type: GraphQLString }
+    })
+});
+
 const userQueries = {
     user: {
         type: UserType,
         args: { id: { type: GraphQLID } },
-        resolve: scopeValidator(['admin'])( (parent, args) =>{
-            return User.findById(args.id);
+        resolve: scopeValidator(['read:user'])(async (parent, args, context) => {
+            return userResolver.getUser(args.id);
         })
     },
     users: {
         type: new GraphQLList(UserType),
-
-        resolve(parent, args) {
-            return User.find({});
-        }
+        resolve: scopeValidator(['read:users'])(async (parent, args, context) => {
+            return userResolver.getAllUsers();
+        })
     }
 };
 
@@ -35,41 +43,41 @@ const userMutations = {
         args: {
             username: { type: GraphQLString },
             password: { type: GraphQLString },
-            role: { type: GraphQLString },
+            roleId: { type: GraphQLID },
             organizationId: { type: GraphQLID }
         },
-        resolve(parent, args) {
-            let user = new User({
-                username: args.username,
-                password: args.password,
-                role: args.role,
-                organizationId: args.organizationId
-            });
-            return user.save();
-        }
+        resolve: scopeValidator(['create:user'])(async (parent, args, context) => {
+            return userResolver.createUser(args.username, args.password, args.roleId, args.organizationId);
+        })
     },
     deleteUser: {
         type: UserType,
         args: {
             id: { type: GraphQLID }
         },
-        resolve(parent, args) {
-            return User.findByIdAndRemove(args.id);
-        }
+        resolve: scopeValidator(['delete:user'])(async (parent, args, context) => {
+            return userResolver.deleteUser(args.id);
+        })
     },
     updateUser: {
         type: UserType,
         args: {
             id: { type: GraphQLID },
             username: { type: GraphQLString },
-            role: { type: GraphQLString }
+            roleId: { type: GraphQLID }
         },
-        resolve(parent, args) {
-            return User.findByIdAndUpdate(
-                args.id,
-                { username: args.username, role: args.role },
-                { new: true }
-            );
+        resolve: scopeValidator(['update:user'])(async (parent, args, context) => {
+            return userResolver.updateUser(args.id, args.username, args.roleId);
+        })
+    },
+    login: {
+        type: LoginType,
+        args: {
+            username: { type: GraphQLString },
+            password: { type: GraphQLString }
+        },
+        resolve: async (parent, args, context) => {
+            return userResolver.loginUser(args.username, args.password);
         }
     }
 };

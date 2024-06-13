@@ -62,7 +62,7 @@ const authentication = async (req, res, next) => {
     req.auth = {
       scope: valid.scope,
       userId: valid.id,
-      user: user,
+      user: user
     };
     next();
   } catch (error) {

@@ -1,8 +1,8 @@
 const scopeValidator = (scope = []) => {
   return (resolver) => {
       return async (parent, args, context, info) => {
+          let scope = context.scope
           if (scope == null || scope.length === 0) return resolver(parent, args, context, info);
-
           let isValid = false;
           let userPermissions = context.scope;  // Assuming context.scope is an array of user permissions
 
@@ -12,7 +12,6 @@ const scopeValidator = (scope = []) => {
                   break;
               }
           }
-
           if (isValid) {
               return resolver(parent, args, context, info);
           } else {
@@ -22,4 +21,4 @@ const scopeValidator = (scope = []) => {
   };
 };
 
-module.exports = { scopeValidator };
+module.exports = scopeValidator;

@@ -1,10 +1,11 @@
 const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList } = require('graphql');
-const Organization = require('../models/organization');
+const organizationResolver = require('../resolvers/organizationResolver');
+
 const OrganizationType = new GraphQLObjectType({
     name: 'Organization',
     fields: () => ({
         id: { type: GraphQLID },
-        name: { type: GraphQLString }
+        name: { type: GraphQLString }   
     })
 });
 
@@ -13,13 +14,13 @@ const organizationQueries = {
         type: OrganizationType,
         args: { id: { type: GraphQLID } },
         resolve(parent, args) {
-            return Organization.findById(args.id);
+            return organizationResolver.getOrganization(args.id);
         }
     },
     organizations: {
         type: new GraphQLList(OrganizationType),
         resolve(parent, args) {
-            return Organization.find({});
+            return organizationResolver.getAllOrganizations();
         }
     }
 };
@@ -31,10 +32,7 @@ const organizationMutations = {
             name: { type: GraphQLString }
         },
         resolve(parent, args) {
-            let organization = new Organization({
-                name: args.name
-            });
-            return organization.save();
+            return organizationResolver.createOrganization(args.name);
         }
     },
     deleteOrganization: {
@@ -43,7 +41,7 @@ const organizationMutations = {
             id: { type: GraphQLID }
         },
         resolve(parent, args) {
-            return Organization.findByIdAndRemove(args.id);
+            return organizationResolver.deleteOrganization(args.id);
         }
     },
     updateOrganization: {
@@ -53,7 +51,7 @@ const organizationMutations = {
             name: { type: GraphQLString }
         },
         resolve(parent, args) {
-            return Organization.findByIdAndUpdate(args.id, { name: args.name }, { new: true });
+            return organizationResolver.updateOrganization(args.id, args.name);
         }
     }
 };

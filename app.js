@@ -28,7 +28,10 @@ mongoose.connect(dbConfig.mongoURI, { useNewUrlParser: true, useUnifiedTopology:
     app.use('/graphql', authentication , graphqlHTTP((req) => ({
         schema: schema,
         graphiql: true,
-        context: { user: req.auth.user, scope: req.auth.scope }
+        context: { 
+            user: req.auth.user,
+            scope: req.auth.scope || []
+        }
       })));
 
 const PORT = process.env.PORT || 5000;

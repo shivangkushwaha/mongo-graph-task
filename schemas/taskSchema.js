@@ -1,5 +1,6 @@
-const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList, GraphQLBoolean } = require('graphql');
-const Task = require('../models/task');
+const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList } = require('graphql');
+const taskResolver = require('../resolvers/taskResolver');
+
 const TaskType = new GraphQLObjectType({
     name: 'Task',
     fields: () => ({
@@ -18,13 +19,13 @@ const taskQueries = {
         type: TaskType,
         args: { id: { type: GraphQLID } },
         resolve(parent, args) {
-            return Task.findById(args.id);
+            return taskResolver.getTask(args.id);
         }
     },
     tasks: {
         type: new GraphQLList(TaskType),
         resolve(parent, args) {
-            return Task.find({});
+            return taskResolver.getAllTasks();
         }
     }
 };
@@ -41,15 +42,7 @@ const taskMutations = {
             organizationId: { type: GraphQLID }
         },
         resolve(parent, args) {
-            let task = new Task({
-                title: args.title,
-                description: args.description,
-                status: args.status,
-                dueDate: args.dueDate,
-                userId: args.userId,
-                organizationId: args.organizationId
-            });
-            return task.save();
+            return taskResolver.createTask(args.title, args.description, args.status, args.dueDate, args.userId, args.organizationId);
         }
     },
     deleteTask: {
@@ -58,7 +51,7 @@ const taskMutations = {
             id: { type: GraphQLID }
         },
         resolve(parent, args) {
-            return Task.findByIdAndRemove(args.id);
+            return taskResolver.deleteTask(args.id);
         }
     },
     updateTask: {
@@ -71,11 +64,7 @@ const taskMutations = {
             dueDate: { type: GraphQLString }
         },
         resolve(parent, args) {
-            return Task.findByIdAndUpdate(
-                args.id,
-                { title: args.title, description: args.description, status: args.status, dueDate: args.dueDate },
-                { new: true }
-            );
+            return taskResolver.updateTask(args.id, args.title, args.description, args.status, args.dueDate);
         }
     }
 };
