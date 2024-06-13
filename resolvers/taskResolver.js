@@ -1,29 +1,77 @@
-const Task = require('../models/task');
+const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList } = require('graphql');
+const taskResolver = require('../resolvers/taskResolver');
+const scopeValidator = require('../middleware/scopeValidator');
 
-const taskResolver = {
-    getTask: async (id) => {
-        return await Task.findById(id);
+const TaskType = new GraphQLObjectType({
+    name: 'Task',
+    fields: () => ({
+        id: { type: GraphQLID },
+        title: { type: GraphQLString },
+        description: { type: GraphQLString },
+        status: { type: GraphQLString },
+        dueDate: { type: GraphQLString },
+        userId: { type: GraphQLID },
+        organizationId: { type: GraphQLID }
+    })
+});
+
+const taskQueries = {
+    task: {
+        type: TaskType,
+        args: { id: { type: GraphQLID } },
+        resolve: scopeValidator(["manage_users_tasks", "manage_tasks"])(async (parent, args, context) => {
+            return taskResolver.getTask(args.id);
+        })
     },
-    getAllTasks: async () => {
-        return await Task.find({});
-    },
-    createTask: async (title, description, status, dueDate, userId, organizationId) => {
-        const task = new Task({
-            title,
-            description,
-            status,
-            dueDate,
-            userId,
-            organizationId
-        });
-        return await task.save();
-    },
-    deleteTask: async (id) => {
-        return await Task.findByIdAndRemove(id);
-    },
-    updateTask: async (id, title, description, status, dueDate) => {
-        return await Task.findByIdAndUpdate(id, { title, description, status, dueDate }, { new: true });
+    tasks: {
+        type: new GraphQLList(TaskType),
+        resolve: scopeValidator(["manage_users_tasks", "manage_tasks"])(async (parent, args, context) => {
+            return taskResolver.getAllTasks();
+        })
     }
 };
 
-module.exports = taskResolver;
+const taskMutations = {
+    addTask: {
+        type: TaskType,
+        args: {
+            title: { type: GraphQLString },
+            description: { type: GraphQLString },
+            status: { type: GraphQLString },
+            dueDate: { type: GraphQLString },
+            userId: { type: GraphQLID },
+            organizationId: { type: GraphQLID }
+        },
+        resolve: scopeValidator(["manage_users_tasks", "manage_tasks"])(async (parent, args, context) => {
+            return taskResolver.createTask(args.title, args.description, args.status, args.dueDate, args.userId, args.organizationId);
+        })
+    },
+    deleteTask: {
+        type: TaskType,
+        args: {
+            id: { type: GraphQLID }
+        },
+        resolve: scopeValidator(["manage_users_tasks", "manage_tasks"])(async (parent, args, context) => {
+            return taskResolver.deleteTask(args.id);
+        })
+    },
+    updateTask: {
+        type: TaskType,
+        args: {
+            id: { type: GraphQLID },
+            title: { type: GraphQLString },
+            description: { type: GraphQLString },
+            status: { type: GraphQLString },
+            dueDate: { type: GraphQLString }
+        },
+        resolve: scopeValidator(["manage_users_tasks", "manage_tasks"])(async (parent, args, context) => {
+            return taskResolver.updateTask(args.id, args.title, args.description, args.status, args.dueDate);
+        })
+    }
+};
+
+module.exports = {
+    TaskType,
+    taskQueries,
+    taskMutations
+};
